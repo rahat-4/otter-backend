@@ -8,6 +8,7 @@ User = get_user_model()
 
 class Organization(BaseModel):
     name = models.CharField(max_length=255)
+    dialog_api_key = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):

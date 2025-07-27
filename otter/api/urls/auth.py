@@ -1,11 +1,16 @@
 from django.urls import path
 
-from ..views.auth import OrganizationUserOnboardView
+from ..views.auth import UserRegistrationView, UserProfileView
 
 urlpatterns = [
     path(
-        "/onboard",
-        OrganizationUserOnboardView.as_view(),
-        name="organization_user_onboard",
+        "/<uuid:user_uid>/profile",
+        UserProfileView.as_view(),
+        name="user_profile",
+    ),
+    path(
+        "/registration",
+        UserRegistrationView.as_view(),
+        name="user_registration",
     ),
 ]

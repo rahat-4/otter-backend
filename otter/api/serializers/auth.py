@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 
 from rest_framework import serializers
 
@@ -7,7 +8,7 @@ from apps.organization.models import Organization, OrganizationUser
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     class Meta:
@@ -27,54 +28,47 @@ class UserSerializer(serializers.ModelSerializer):
 
         read_only_fields = ["uid", "time_zone"]
 
-    def validate(self, attrs):
-        errors = {}
-        email = attrs.get("email")
+    def validate_email(self, email):
         if User.objects.filter(email=email).exists():
-            errors["email"] = "User with this email already exists."
-
-        return attrs
+            raise serializers.ValidationError("User with this email already exists.")
+        return email
 
     def create(self, validated_data):
-        password = validated_data.pop("password")
+        with transaction.atomic():
+            password = validated_data.pop("password")
+            first_name = validated_data.get("first_name")
+            last_name = validated_data.get("last_name")
 
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
+            user = User(**validated_data)
+            user.set_password(password)
+            user.save()
 
-        return user
+            organization = Organization.objects.create(
+                name=f"{first_name} {last_name}", dialog_api_key="test"
+            )
+            OrganizationUser.objects.create(user=user, organization=organization)
+
+            return user
 
 
-class OrganizationSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Organization
-        fields = ["uid", "name", "description"]
+        model = User
+        fields = [
+            "uid",
+            "first_name",
+            "last_name",
+            "email",
+            "street_address",
+            "city",
+            "zip_code",
+            "country",
+            "time_zone",
+        ]
 
-    def validate(self, attrs):
-        errors = {}
-        name = attrs.get("name")
-        if Organization.objects.filter(name=name).exists():
-            errors["name"] = "Organization with this name already exists."
+        read_only_fields = ["uid", "time_zone"]
 
-        return attrs
-
-
-class OrganizationUserOnboardSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-    organization = OrganizationSerializer()
-
-    class Meta:
-        model = OrganizationUser
-        fields = ["uid", "organization", "user"]
-
-    def validate(self, attrs):
-        errors = {}
-        user = attrs.get("user")
-        organization = attrs.get("organization")
-
-        if OrganizationUser.objects.filter(
-            user=user, organization=organization
-        ).exists():
-            errors["user"] = "User is already a member of this organization."
-
-        return attrs
+    def validate_email(self, email):
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError("User with this email already exists.")
+        return email
