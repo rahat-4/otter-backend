@@ -16,7 +16,7 @@ class SubscriptionPlan(BaseModel):
     description = models.TextField(blank=True, null=True)
 
     # FK
-    organization = models.ForeignKey(
+    organization = models.OneToOneField(
         Organization,
         on_delete=models.CASCADE,
         related_name="organizations_subscription_plan",

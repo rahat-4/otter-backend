@@ -6,6 +6,6 @@ urlpatterns = [
     path(
         "/<uuid:organization_uid>/events",
         OrganizationEventListView.as_view(),
-        name="event_list",
+        name="event-list",
     ),
 ]

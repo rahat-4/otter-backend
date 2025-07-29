@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 
-from rest_framework.generics import CreateAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
 
 from apps.organization.models import OrganizationUser
 
@@ -16,7 +16,7 @@ class UserRegistrationView(CreateAPIView):
     permission_classes = []
 
 
-class UserProfileView(UpdateAPIView):
+class UserProfileView(RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
 

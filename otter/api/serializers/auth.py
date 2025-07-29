@@ -4,6 +4,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from apps.organization.models import Organization, OrganizationUser
+from apps.subscription.models import SubscriptionPlan
 
 User = get_user_model()
 
@@ -47,6 +48,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 name=f"{first_name} {last_name}", dialog_api_key="test"
             )
             OrganizationUser.objects.create(user=user, organization=organization)
+            SubscriptionPlan.objects.create(
+                organization=organization, event_limit=1, invitation_limit=50
+            )
 
             return user
 
