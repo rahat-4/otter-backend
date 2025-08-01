@@ -9,8 +9,8 @@ class OrganizationEventSerializer(serializers.ModelSerializer):
         fields = [
             "uid",
             "title",
-            "date",
-            "time",
+            "start_date",
+            "start_time",
             "location",
             "description",
             "invitation_link",
